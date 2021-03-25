@@ -1,0 +1,52 @@
+
+version: '3.8'
+
+services:
+
+  aedes:
+    build: .
+    image: aedes
+    ports:
+      - "1883-1893:1883"
+    deploy:
+      replicas: 3
+    environment:
+      - MONGO_URL=mongodb://mongodb/aedes-clusters
+      - REDIS_HOST=redis
+    networks:
+      - aedes
+    depends_on:
+      - redis
+      - mongodb
+
+  mongodb:
+    image : mongo:4.4
+    container_name: mongodb
+    environment:
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - mongodata:/data/db
+    ports:
+      - 27017:27017
+    networks:
+      - aedes
+
+  redis:
+    image: redis:alpine
+    # command: redis-server --requirepass sOmE_sEcUrE_pAsS
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/var/lib/redis
+    networks:
+      - aedes
+
+networks:
+  aedes:
+    name: local
+
+volumes:
+  mongodata:
+  redisdata:
